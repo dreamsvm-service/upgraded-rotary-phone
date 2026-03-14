@@ -5,11 +5,6 @@ bash \
 curl \
 git \
 htop \
-tmux \
-openssh \
-docker \
-qemu-system-x86_64 \
-qemu-img \
 nano
 
 WORKDIR /workspace
