@@ -6,6 +6,7 @@ RUN apk add --no-cache \
     bash \
     git \
     curl \
+    fastfetch \
     openssh-client
 
 ENV DOCKER_API_VERSION=1.43
