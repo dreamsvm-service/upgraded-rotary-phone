@@ -4,14 +4,12 @@
     "dockerfile": "Dockerfile"
   },
   "remoteUser": "root",
-  "overrideCommand": false,
-
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
   "hostRequirements": {
     "cpus": 4,
     "memory": "16gb",
     "storage": "32gb"
-  },
-"features": {
-"ghcr.io/devcontainers/features/docker-in-docker:2": {}
   }
 }
