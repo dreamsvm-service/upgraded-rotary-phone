@@ -1,12 +1,10 @@
-FROM alpine:3.19
+FROM alpine:latest
 
 RUN apk add --no-cache \
-bash \
-curl \
-git \
-htop \
-nano
-
-WORKDIR /workspace
-
-CMD ["/bin/bash"]
+    docker-cli \
+    docker-compose \
+    bash \
+    curl \
+    git
+    
+ENV SHELL=/bin/bash
