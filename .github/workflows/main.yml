@@ -11,17 +11,23 @@ jobs:
       image: debian:11
 
     steps:
-      - name: Set non-interactive + timezone
+      - name: Fix timezone + non-interactive
         run: |
           export DEBIAN_FRONTEND=noninteractive
           ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
           echo "Europe/Warsaw" > /etc/timezone
 
-      - name: Fix Debian sources (archive)
+      - name: Fix Debian sources
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
-          sed -i 's/security.debian.org/archive.debian.org/g' /etc/apt/sources.list
+
+          sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list
+          sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list
+
+          sed -i '/bullseye-security/d' /etc/apt/sources.list
+
+          echo "Acquire::Check-Valid-Until false;" > /etc/apt/apt.conf.d/99no-check-valid-until
+
           apt update
 
       - name: Install dependencies
@@ -38,12 +44,12 @@ jobs:
 
       - name: Clone PHP-Binaries
         run: git clone https://github.com/pmmp/PHP-Binaries.git
-      
+
       - name: Build PHP
         run: |
-         cd PHP-Binaries
-         chmod +x compile.sh
-         ./compile.sh -P5 -j$(nproc)
+          cd PHP-Binaries
+          chmod +x compile.sh
+          ./compile.sh -P5 -j$(nproc)
 
       - name: Prepare output
         run: |
