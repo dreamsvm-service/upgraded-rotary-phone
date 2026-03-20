@@ -38,12 +38,12 @@ jobs:
 
       - name: Clone PHP-Binaries
         run: git clone https://github.com/pmmp/PHP-Binaries.git
-
+      
       - name: Build PHP
         run: |
-          cd PHP-Binaries
-          chmod +x compile.sh
-          ./compile.sh -j$(nproc)
+         cd PHP-Binaries
+         chmod +x compile.sh
+         ./compile.sh -P5 -j$(nproc)
 
       - name: Prepare output
         run: |
