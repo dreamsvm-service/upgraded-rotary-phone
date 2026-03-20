@@ -7,17 +7,15 @@ ARCH=$(uname -m)
 PROOT_VERSION="5.3.0"
 
 if [ "$ARCH" = "x86_64" ]; then
-  DEB_ARCH="amd64"
   PROOT_URL="https://github.com/proot-me/proot/releases/download/v${PROOT_VERSION}/proot-v${PROOT_VERSION}-x86_64-static"
+  ROOTFS_URL="https://www.dropbox.com/s/lx1xwi69gxasbeq/amd64-rootfs-20170318T102216Z.tar.gz?dl=1"
 elif [ "$ARCH" = "aarch64" ]; then
-  DEB_ARCH="arm64"
   PROOT_URL="https://github.com/proot-me/proot/releases/download/v${PROOT_VERSION}/proot-v${PROOT_VERSION}-aarch64-static"
+  ROOTFS_URL="https://www.dropbox.com/s/zxfg8aosr7zzmg8/arm64-rootfs-20170318T102424Z.tar.gz?dl=1"
 else
   echo "Unsupported architecture: $ARCH"
   exit 1
 fi
-
-ROOTFS_URL="https://github.com/debuerreotype/docker-debian-artifacts/raw/dist-bookworm/${DEB_ARCH}/rootfs.tar.gz"
 
 mkdir -p "$ROOTFS_DIR"
 
@@ -53,4 +51,4 @@ exec "$ROOTFS_DIR/usr/local/bin/proot" \
 --bind=/dev \
 --bind=/sys \
 --bind=/tmp \
-/bin/bash
+/bin/sh
