@@ -21,13 +21,23 @@ mkdir -p "$ROOTFS_DIR"
 
 if [ ! -f "$ROOTFS_DIR/.installed" ]; then
 
-  echo "[*] Downloading rootfs..."
   curl -L --fail -o /tmp/rootfs.tar.gz "$ROOTFS_URL"
 
-  echo "[*] Extracting rootfs..."
-  tar -xzf /tmp/rootfs.tar.gz -C "$ROOTFS_DIR"
+  tar -xzf /tmp/rootfs.tar.gz -C "$ROOTFS_DIR" || true
 
-  echo "[*] Downloading proot..."
+  if [ ! -f "$ROOTFS_DIR/bin/sh" ]; then
+    FOUND=$(find "$ROOTFS_DIR" -type f -name sh 2>/dev/null | head -n 1 | xargs dirname || true)
+    if [ -n "$FOUND" ]; then
+      mv "$FOUND"/* "$ROOTFS_DIR"/ 2>/dev/null || true
+      rm -rf "$FOUND"
+    fi
+  fi
+
+  if [ ! -f "$ROOTFS_DIR/bin/sh" ]; then
+    rm -rf "$ROOTFS_DIR"/*
+    tar -xzf /tmp/rootfs.tar.gz -C "$ROOTFS_DIR" --strip-components=1
+  fi
+
   mkdir -p "$ROOTFS_DIR/usr/local/bin"
   curl -L --fail -o "$ROOTFS_DIR/usr/local/bin/proot" "$PROOT_URL"
 
@@ -39,6 +49,11 @@ if [ ! -f "$ROOTFS_DIR/.installed" ]; then
   touch "$ROOTFS_DIR/.installed"
 
   rm -f /tmp/rootfs.tar.gz
+fi
+
+if [ ! -f "$ROOTFS_DIR/bin/sh" ]; then
+  echo "ERROR: /bin/sh not found in rootfs!"
+  exit 1
 fi
 
 exec "$ROOTFS_DIR/usr/local/bin/proot" \
