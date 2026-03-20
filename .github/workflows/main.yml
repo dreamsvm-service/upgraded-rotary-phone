@@ -1,34 +1,41 @@
-name: Build PMMP PHP (compatible)
+name: Build PMMP PHP (GLIBC 2.28 compatible)
 
 on:
   workflow_dispatch:
-  push:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     container:
-      image: ubuntu:20.04
+      image: debian:10
 
     steps:
-      - name: Update system
+      - name: Disable interactive (tzdata fix)
         run: |
+          export DEBIAN_FRONTEND=noninteractive
+          ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
+          echo "Europe/Warsaw" > /etc/timezone
+
+      - name: Fix sources (Debian 10 archive)
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
+          sed -i 's/security.debian.org/archive.debian.org/g' /etc/apt/sources.list
           apt update
-          apt upgrade -y
 
       - name: Install dependencies
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           apt install -y \
-          git curl wget \
+          tzdata git curl wget \
           build-essential autoconf automake libtool pkg-config \
           bison re2c \
           libsqlite3-dev libssl-dev zlib1g-dev \
           libxml2-dev libcurl4-openssl-dev
 
       - name: Clone PHP-Binaries
-        run: |
-          git clone https://github.com/pmmp/PHP-Binaries.git
+        run: git clone https://github.com/pmmp/PHP-Binaries.git
 
       - name: Build PHP
         run: |
@@ -44,5 +51,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pmmp-php-bin
+          name: pmmp-php-glibc228
           path: output/
