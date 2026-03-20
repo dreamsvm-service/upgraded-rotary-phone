@@ -66,4 +66,4 @@ exec "/home/container/amd64-rootfs-20170318T102216Z/usr/local/bin/proot" \
 --bind=/dev \
 --bind=/sys \
 --bind=/tmp \
-/bin/sh
+/home/container/amd64-rootfs-20170318T102216Z/bin/sh
