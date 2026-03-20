@@ -1,0 +1,48 @@
+name: Build PMMP PHP (compatible)
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ubuntu:20.04
+
+    steps:
+      - name: Update system
+        run: |
+          apt update
+          apt upgrade -y
+
+      - name: Install dependencies
+        run: |
+          apt install -y \
+          git curl wget \
+          build-essential autoconf automake libtool pkg-config \
+          bison re2c \
+          libsqlite3-dev libssl-dev zlib1g-dev \
+          libxml2-dev libcurl4-openssl-dev
+
+      - name: Clone PHP-Binaries
+        run: |
+          git clone https://github.com/pmmp/PHP-Binaries.git
+
+      - name: Build PHP
+        run: |
+          cd PHP-Binaries
+          chmod +x compile.sh
+          ./compile.sh -j$(nproc)
+
+      - name: Prepare output
+        run: |
+          mkdir output
+          cp -r PHP-Binaries/bin output/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmmp-php-bin
+          path: output/
