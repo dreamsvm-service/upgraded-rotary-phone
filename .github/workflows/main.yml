@@ -1,4 +1,4 @@
-name: Build PMMP PHP (stable)
+name: Build PMMP PHP + Release (Debian 11)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       image: debian:11
 
     steps:
-      - name: Set non-interactive + timezone
+      - name: Setup timezone
         run: |
           export DEBIAN_FRONTEND=noninteractive
           ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
@@ -32,7 +32,8 @@ jobs:
           cmake make gcc g++ \
           bison re2c \
           libsqlite3-dev libssl-dev zlib1g-dev \
-          libxml2-dev libcurl4-openssl-dev
+          libxml2-dev libcurl4-openssl-dev \
+          zip
 
       - name: Clone PHP-Binaries
         run: git clone https://github.com/pmmp/PHP-Binaries.git
@@ -43,13 +44,17 @@ jobs:
           chmod +x compile.sh
           ./compile.sh -P5 -j$(nproc)
 
-      - name: Prepare output
+      - name: Package build
         run: |
-          mkdir -p output
-          cp -r PHP-Binaries/bin output/
+          mkdir release
+          cp -r PHP-Binaries/bin release/
+          zip -r pmmp-php.zip release
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: pmmp-php
-          path: output/
+          tag_name: build-${{ github.run_number }}
+          name: PMMP PHP Build ${{ github.run_number }}
+          files: pmmp-php.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
