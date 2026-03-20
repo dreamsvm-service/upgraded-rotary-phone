@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: debian:10
+      image: debian:11
 
     steps:
       - name: Set non-interactive + timezone
