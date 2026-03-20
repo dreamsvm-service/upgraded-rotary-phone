@@ -11,13 +11,13 @@ jobs:
       image: debian:10
 
     steps:
-      - name: Disable interactive (tzdata fix)
+      - name: Set non-interactive + timezone
         run: |
           export DEBIAN_FRONTEND=noninteractive
           ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
           echo "Europe/Warsaw" > /etc/timezone
 
-      - name: Fix sources (Debian 10 archive)
+      - name: Fix Debian sources (archive)
         run: |
           export DEBIAN_FRONTEND=noninteractive
           sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
@@ -28,8 +28,10 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt install -y \
-          tzdata git curl wget \
-          build-essential autoconf automake libtool pkg-config \
+          tzdata \
+          git curl wget \
+          build-essential autoconf automake libtool libtool-bin pkg-config \
+          cmake make gcc g++ \
           bison re2c \
           libsqlite3-dev libssl-dev zlib1g-dev \
           libxml2-dev libcurl4-openssl-dev
@@ -45,7 +47,7 @@ jobs:
 
       - name: Prepare output
         run: |
-          mkdir output
+          mkdir -p output
           cp -r PHP-Binaries/bin output/
 
       - name: Upload artifact
