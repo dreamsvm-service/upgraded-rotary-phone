@@ -9,11 +9,9 @@ PROOT_VERSION="5.3.0"
 if [ "$ARCH" = "x86_64" ]; then
   PROOT_URL="https://github.com/proot-me/proot/releases/download/v${PROOT_VERSION}/proot-v${PROOT_VERSION}-x86_64-static"
   ROOTFS_URL="https://www.dropbox.com/s/lx1xwi69gxasbeq/amd64-rootfs-20170318T102216Z.tar.gz?dl=1"
-  ROOTFS_SUBDIR="amd64-rootfs-20170318T102216Z"
 elif [ "$ARCH" = "aarch64" ]; then
   PROOT_URL="https://github.com/proot-me/proot/releases/download/v${PROOT_VERSION}/proot-v${PROOT_VERSION}-aarch64-static"
   ROOTFS_URL="https://www.dropbox.com/s/zxfg8aosr7zzmg8/arm64-rootfs-20170318T102424Z.tar.gz?dl=1"
-  ROOTFS_SUBDIR="arm64-rootfs-20170318T102424Z"
 else
   echo "Unsupported architecture: $ARCH"
   exit 1
@@ -27,18 +25,12 @@ if [ ! -f "$ROOTFS_DIR/.installed" ]; then
 
   tar -xzf /tmp/rootfs.tar.gz -C "$ROOTFS_DIR"
 
-  if [ -d "$ROOTFS_DIR/$ROOTFS_SUBDIR" ]; then
-    mv "$ROOTFS_DIR/$ROOTFS_SUBDIR"/* "$ROOTFS_DIR"/ 2>/dev/null || true
-    rm -rf "$ROOTFS_DIR/$ROOTFS_SUBDIR"
-  fi
-
-  if [ ! -f "$ROOTFS_DIR/bin/sh" ]; then
-    echo "ERROR: /bin/sh not found"
-    exit 1
+  if [ -d "$ROOTFS_DIR/amd64-rootfs-20170318T102216Z" ]; then
+    mv "$ROOTFS_DIR/amd64-rootfs-20170318T102216Z"/* "$ROOTFS_DIR"/ 2>/dev/null || true
+    rm -rf "$ROOTFS_DIR/amd64-rootfs-20170318T102216Z"
   fi
 
   mkdir -p "$ROOTFS_DIR/usr/local/bin"
-
   curl -L --fail -o "$ROOTFS_DIR/usr/local/bin/proot" "$PROOT_URL"
   chmod +x "$ROOTFS_DIR/usr/local/bin/proot"
 
@@ -52,12 +44,12 @@ fi
 
 exec "$ROOTFS_DIR/usr/local/bin/proot" \
 --rootfs="$ROOTFS_DIR" \
+--root-id \
 --link2symlink \
 --kill-on-exit \
---root-id \
 --cwd=/root \
 --bind=/proc \
 --bind=/dev \
 --bind=/sys \
 --bind=/tmp \
-/bin/sh
+/bin/bash
