@@ -56,8 +56,8 @@ if [ ! -f "$ROOTFS_DIR/bin/sh" ]; then
   exit 1
 fi
 
-exec "$ROOTFS_DIR/usr/local/bin/proot" \
---rootfs="$ROOTFS_DIR" \
+exec "/home/container/amd64-rootfs-20170318T102216Z/usr/local/bin/proot" \
+--rootfs="/home/container/amd64-rootfs-20170318T102216Z" \
 --link2symlink \
 --kill-on-exit \
 --root-id \
