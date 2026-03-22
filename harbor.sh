@@ -36,8 +36,8 @@ PROOT_BIN="$ROOTFS_DIR/usr/local/bin/proot"
 if [ ! -e $ROOTFS_DIR/.installed ]; then
   echo "📥 Pobieranie Ubuntu..."
 
-  curl -Lo /tmp/rootfs.tar.xz \
-  "https://github.com/termux/proot-distro/releases/download/v4.7.0/ubuntu-jammy-x86_64-pd-v4.7.0.tar.xz"
+  curl -Lo /tmp/rootfs.tar.gz \
+  "https://github.com/CypherpunkArmory/UserLAnd-Assets-Ubuntu/releases/download/v0.0.12/x86_64-rootfs.tar.gz"
 
   mkdir -p $ROOTFS_DIR
   tar -xJf /tmp/rootfs.tar.xz -C $ROOTFS_DIR
