@@ -1,10 +1,10 @@
 #!/bin/sh
 
-ROOTFS_DIR=/home/container
+ROOTFS_DIR=/home/container/ubuntu
 PROOT_VERSION="5.3.0"
 
 #############################
-# ARCH CHECK
+# ARCH
 #############################
 
 ARCH=$(uname -m)
@@ -18,33 +18,36 @@ fi
 # PROOT
 #############################
 
-mkdir -p $ROOTFS_DIR/usr/local/bin
+mkdir -p /home/container/bin
 
-if [ ! -f $ROOTFS_DIR/usr/local/bin/proot ]; then
+if [ ! -f /home/container/bin/proot ]; then
   echo "📥 Pobieranie proot..."
-  curl -Lo $ROOTFS_DIR/usr/local/bin/proot \
+  curl -L --retry 5 --retry-delay 3 \
+  -o /home/container/bin/proot \
   "https://github.com/proot-me/proot/releases/download/v${PROOT_VERSION}/proot-v${PROOT_VERSION}-${ARCH}-static"
-  chmod +x $ROOTFS_DIR/usr/local/bin/proot
+
+  chmod +x /home/container/bin/proot
 fi
 
-PROOT_BIN="$ROOTFS_DIR/usr/local/bin/proot"
+PROOT_BIN="/home/container/bin/proot"
 
 #############################
-# UBUNTU INSTALL CHECK
+# INSTALL CHECK
 #############################
 
 if [ -f "$ROOTFS_DIR/.installed" ] && [ -f "$ROOTFS_DIR/bin/bash" ]; then
-  echo "✅ Ubuntu już zainstalowane — pomijam pobieranie"
+  echo "✅ Ubuntu już zainstalowane"
 else
-  echo "📥 Instalowanie Ubuntu (UserLAnd rootfs)..."
+  echo "📥 Instalowanie Ubuntu..."
 
-  rm -rf $ROOTFS_DIR/*
   mkdir -p $ROOTFS_DIR
 
-  curl -Lo /tmp/rootfs.tar.gz \
+  curl -L --retry 5 --retry-delay 3 \
+  -o "$ROOTFS_DIR/rootfs.tar.gz" \
   "https://github.com/CypherpunkArmory/UserLAnd-Assets-Ubuntu/releases/download/v0.0.12/x86_64-rootfs.tar.gz"
 
-  tar -xzf /tmp/rootfs.tar.gz -C $ROOTFS_DIR
+  tar -xzf "$ROOTFS_DIR/rootfs.tar.gz" -C $ROOTFS_DIR
+  rm "$ROOTFS_DIR/rootfs.tar.gz"
 
   echo "🌐 DNS..."
   echo "nameserver 1.1.1.1" > $ROOTFS_DIR/etc/resolv.conf
@@ -71,4 +74,5 @@ exec $PROOT_BIN \
 --bind=/dev \
 --bind=/sys \
 --bind=/tmp \
+--bind=/home/container:/host \
 /bin/bash
