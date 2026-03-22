@@ -40,7 +40,7 @@ if [ ! -e $ROOTFS_DIR/.installed ]; then
   "https://github.com/CypherpunkArmory/UserLAnd-Assets-Ubuntu/releases/download/v0.0.12/x86_64-rootfs.tar.gz"
 
   mkdir -p $ROOTFS_DIR
-  tar -xJf /tmp/rootfs.tar.xz -C $ROOTFS_DIR
+  tar -xJf /tmp/rootfs.tar.gz -C $ROOTFS_DIR
 
   echo "🌐 Ustawianie DNS..."
   echo "nameserver 1.1.1.1" > $ROOTFS_DIR/etc/resolv.conf
