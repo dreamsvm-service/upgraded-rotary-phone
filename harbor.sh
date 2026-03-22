@@ -19,7 +19,7 @@ else
 fi
 
 #############################
-# PROOT (AUTO DOWNLOAD)
+# PROOT
 #############################
 
 mkdir -p $ROOTFS_DIR/usr/local/bin
@@ -34,26 +34,46 @@ fi
 PROOT_BIN="$ROOTFS_DIR/usr/local/bin/proot"
 
 #############################
-# MENU
+# DISTRO DETECTION
 #############################
 
-clear
-echo "========================="
-echo "   SELECT DISTRO"
-echo "========================="
-echo "1) Alpine Linux (lekki)"
-echo "2) Ubuntu 22.04 (x86_64 only)"
-echo "========================="
+# 1. argument
+DISTRO="$1"
 
-read -p "Wybierz (1/2): " CHOICE
+# 2. env fallback
+if [ -z "$DISTRO" ]; then
+  DISTRO="$DISTRO"
+fi
+
+# 3. menu tylko jeśli brak i terminal interaktywny
+if [ -z "$DISTRO" ] && [ -t 0 ]; then
+  clear
+  echo "1) Alpine"
+  echo "2) Ubuntu"
+  read -p "Wybierz: " CHOICE
+
+  if [ "$CHOICE" = "2" ]; then
+    DISTRO="ubuntu"
+  else
+    DISTRO="alpine"
+  fi
+fi
+
+# 4. final fallback
+if [ -z "$DISTRO" ]; then
+  echo "Brak wyboru → Alpine (default)"
+  DISTRO="alpine"
+fi
+
+echo "Wybrano: $DISTRO"
 
 #############################
 # UBUNTU
 #############################
 
-if [ "$CHOICE" = "2" ]; then
+if [ "$DISTRO" = "ubuntu" ]; then
   if [ "$ARCH" != "x86_64" ]; then
-    echo "Ubuntu działa tylko na x86_64"
+    echo "Ubuntu tylko x86_64"
     exit 1
   fi
 
@@ -72,8 +92,6 @@ if [ "$CHOICE" = "2" ]; then
     touch $ROOTFS_DIR/.installed
   fi
 
-  echo "Start Ubuntu..."
-
   exec $PROOT_BIN \
   --rootfs="$ROOTFS_DIR" \
   --link2symlink \
@@ -88,7 +106,7 @@ if [ "$CHOICE" = "2" ]; then
 fi
 
 #############################
-# ALPINE (DEFAULT)
+# ALPINE
 #############################
 
 ALPINE_VERSION="3.9"
@@ -106,8 +124,6 @@ if [ ! -e $ROOTFS_DIR/.installed ]; then
 fi
 
 if [ ! -e $ROOTFS_DIR/.installed ]; then
-  echo "Instalowanie pakietów Alpine..."
-
   curl -Lo /tmp/apk-tools-static.apk \
   "https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main/${ARCH}/apk-tools-static-${APK_TOOLS_VERSION}.apk"
 
@@ -126,8 +142,6 @@ if [ ! -e $ROOTFS_DIR/.installed ]; then
   rm -rf /tmp/rootfs.tar.gz /tmp/apk-tools-static.apk /tmp/sbin
   touch $ROOTFS_DIR/.installed
 fi
-
-echo "Start Alpine..."
 
 exec $PROOT_BIN \
 --rootfs="$ROOTFS_DIR" \
