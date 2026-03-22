@@ -10,7 +10,7 @@ ROOTFS_DIR=/home/container
 
 # Define the Alpine Linux version we are going to be using.
 ALPINE_VERSION="3.9"
-ALPINE_FULL_VERSION="3.18.3"
+ALPINE_FULL_VERSION="3.9.6"
 APK_TOOLS_VERSION="2.14.0-r2" # Make sure to update this too when updating Alpine Linux.
 PROOT_VERSION="5.3.0" # Some releases do not have static builds attached.
 
@@ -32,8 +32,8 @@ fi
 if [ ! -e $ROOTFS_DIR/.installed ]; then
     # Download Alpine Linux root file system.
     curl -Lo /tmp/rootfs.tar.gz \
-    "https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/releases/${ARCH}/alpine-minirootfs-${ALPINE_FULL_VERSION}-${ARCH}.tar.gz"
-    https://dl-cdn.alpinelinux.org/v${ALPINE_VERSION}/releases/${ARCH}/alpine-minirootfs-3.9.6-x86_64.tar.gz
+    "https://dl-cdn.alpinelinux.org/v${ALPINE_VERSION}/releases/${ARCH}/alpine-minirootfs-${ALPINE_FULL_VERSION}-${ARCH}.tar.gz"
+    
     # Extract the Alpine Linux root file system.
     tar -xzf /tmp/rootfs.tar.gz -C $ROOTFS_DIR
 fi
