@@ -1,16 +1,10 @@
 #!/bin/sh
 
-#############################
-# CONFIG
-#############################
-
 ROOTFS_DIR=/home/container
-
-# Wybierz distro: alpine lub ubuntu
-DISTRO="alpine"
+PROOT_VERSION="5.3.0"
 
 #############################
-# ARCH DETECTION
+# ARCH
 #############################
 
 ARCH=$(uname -m)
@@ -25,70 +19,97 @@ else
 fi
 
 #############################
-# UBUNTU SETUP (x86_64 only)
+# PROOT (AUTO DOWNLOAD)
 #############################
 
-if [ "$DISTRO" = "ubuntu" ]; then
+mkdir -p $ROOTFS_DIR/usr/local/bin
+
+if [ ! -f $ROOTFS_DIR/usr/local/bin/proot ]; then
+  echo "Downloading proot..."
+  curl -Lo $ROOTFS_DIR/usr/local/bin/proot \
+  "https://github.com/proot-me/proot/releases/download/v${PROOT_VERSION}/proot-v${PROOT_VERSION}-${ARCH}-static"
+  chmod +x $ROOTFS_DIR/usr/local/bin/proot
+fi
+
+PROOT_BIN="$ROOTFS_DIR/usr/local/bin/proot"
+
+#############################
+# MENU
+#############################
+
+clear
+echo "========================="
+echo "   SELECT DISTRO"
+echo "========================="
+echo "1) Alpine Linux (lekki)"
+echo "2) Ubuntu 22.04 (x86_64 only)"
+echo "========================="
+
+read -p "Wybierz (1/2): " CHOICE
+
+#############################
+# UBUNTU
+#############################
+
+if [ "$CHOICE" = "2" ]; then
   if [ "$ARCH" != "x86_64" ]; then
-    echo "Ubuntu supported only on x86_64"
+    echo "Ubuntu działa tylko na x86_64"
     exit 1
   fi
 
   if [ ! -e $ROOTFS_DIR/.installed ]; then
-    echo "Downloading Ubuntu rootfs..."
+    echo "Instalowanie Ubuntu..."
 
-    curl -Lo /tmp/ubuntu.tar.xz \
-      "https://github.com/termux/proot-distro/releases/download/v4.7.0/ubuntu-jammy-x86_64-pd-v4.7.0.tar.xz"
+    curl -Lo /tmp/rootfs.tar.xz \
+    "https://github.com/termux/proot-distro/releases/download/v4.7.0/ubuntu-jammy-x86_64-pd-v4.7.0.tar.xz"
 
     mkdir -p $ROOTFS_DIR
-    tar -xJf /tmp/ubuntu.tar.xz -C $ROOTFS_DIR
+    tar -xJf /tmp/rootfs.tar.xz -C $ROOTFS_DIR
+
+    echo "nameserver 1.1.1.1" > $ROOTFS_DIR/etc/resolv.conf
+    echo "nameserver 1.0.0.1" >> $ROOTFS_DIR/etc/resolv.conf
 
     touch $ROOTFS_DIR/.installed
   fi
 
-  exec proot \
-    --rootfs="$ROOTFS_DIR" \
-    --link2symlink \
-    --kill-on-exit \
-    --root-id \
-    --cwd=/root \
-    --bind=/proc \
-    --bind=/dev \
-    --bind=/sys \
-    --bind=/tmp \
-    /bin/bash
+  echo "Start Ubuntu..."
 
-  exit 0
+  exec $PROOT_BIN \
+  --rootfs="$ROOTFS_DIR" \
+  --link2symlink \
+  --kill-on-exit \
+  --root-id \
+  --cwd=/root \
+  --bind=/proc \
+  --bind=/dev \
+  --bind=/sys \
+  --bind=/tmp \
+  /bin/bash
 fi
 
 #############################
-# ALPINE SETUP (default)
+# ALPINE (DEFAULT)
 #############################
 
 ALPINE_VERSION="3.9"
 ALPINE_FULL_VERSION="3.9.6"
 APK_TOOLS_VERSION="2.14.0-r2"
-PROOT_VERSION="5.3.0"
-
-if [ "$ARCH" = "x86_64" ]; then
-  ALPINE_ARCH=amd64
-elif [ "$ARCH" = "aarch64" ]; then
-  ALPINE_ARCH=arm64
-fi
 
 if [ ! -e $ROOTFS_DIR/.installed ]; then
+  echo "Instalowanie Alpine..."
+
   curl -Lo /tmp/rootfs.tar.gz \
   "https://dl-cdn.alpinelinux.org/v${ALPINE_VERSION}/releases/${ARCH}/alpine-minirootfs-${ALPINE_FULL_VERSION}-${ARCH}.tar.gz"
 
+  mkdir -p $ROOTFS_DIR
   tar -xzf /tmp/rootfs.tar.gz -C $ROOTFS_DIR
 fi
 
 if [ ! -e $ROOTFS_DIR/.installed ]; then
+  echo "Instalowanie pakietów Alpine..."
+
   curl -Lo /tmp/apk-tools-static.apk \
   "https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main/${ARCH}/apk-tools-static-${APK_TOOLS_VERSION}.apk"
-
-  curl -Lo $ROOTFS_DIR/usr/local/bin/proot \
-  "https://github.com/proot-me/proot/releases/download/v${PROOT_VERSION}/proot-v${PROOT_VERSION}-${ARCH}-static"
 
   tar -xzf /tmp/apk-tools-static.apk -C /tmp/
 
@@ -96,19 +117,19 @@ if [ ! -e $ROOTFS_DIR/.installed ]; then
     -X "https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main/" \
     -U --allow-untrusted \
     --root $ROOTFS_DIR add alpine-base apk-tools
-
-  chmod 755 $ROOTFS_DIR/usr/local/bin/proot
 fi
 
 if [ ! -e $ROOTFS_DIR/.installed ]; then
-  printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" > $ROOTFS_DIR/etc/resolv.conf
-  rm -rf /tmp/apk-tools-static.apk /tmp/rootfs.tar.gz /tmp/sbin
+  echo "nameserver 1.1.1.1" > $ROOTFS_DIR/etc/resolv.conf
+  echo "nameserver 1.0.0.1" >> $ROOTFS_DIR/etc/resolv.conf
+
+  rm -rf /tmp/rootfs.tar.gz /tmp/apk-tools-static.apk /tmp/sbin
   touch $ROOTFS_DIR/.installed
 fi
 
-echo "Starting Alpine..."
+echo "Start Alpine..."
 
-exec $ROOTFS_DIR/usr/local/bin/proot \
+exec $PROOT_BIN \
 --rootfs="$ROOTFS_DIR" \
 --link2symlink \
 --kill-on-exit \
