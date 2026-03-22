@@ -31,11 +31,11 @@ fi
 # Download & decompress the Alpine linux root file system if not already installed.
 if [ ! -e $ROOTFS_DIR/.installed ]; then
     # Download Alpine Linux root file system.
-    curl -Lo /tmp/rootfs.tar.gz \
-    "https://dl-cdn.alpinelinux.org/v${ALPINE_VERSION}/releases/${ARCH}/alpine-minirootfs-${ALPINE_FULL_VERSION}-${ARCH}.tar.gz"
+    curl -Lo /tmp/rootfs.tar.xz \
+    "https://github.com/termux/proot-distro/releases/download/v4.7.0/ubuntu-jammy-x86_64-pd-v4.7.0.tar.xz"
     
     # Extract the Alpine Linux root file system.
-    tar -xzf /tmp/rootfs.tar.gz -C $ROOTFS_DIR
+    tar -xvf /tmp/rootfs.tar.xz -C $ROOTFS_DIR
 fi
 
 ################################
